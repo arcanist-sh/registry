@@ -372,6 +372,15 @@ export async function admin(env: Env, req: Request, rest: string[]): Promise<Res
     await stmt.run();
     return json({ login, id: res.id, token: created }, 201);
   }
+  if (what === "users" && arg && rest[2] === "tokens" && req.method === "POST") {
+    // Account recovery: mint a fresh all-scope token for an existing user.
+    const user = await env.DB.prepare("SELECT id FROM users WHERE login = ?").bind(arg).first<{ id: number }>();
+    if (!user) throw new HttpError(404, "no_such_user", `no user named ${arg}`);
+    const { created, stmt } = await mintToken(env, user.id, "recovery", ["publish", "yank", "owners", "tokens"], null, null);
+    await stmt.run();
+    await env.DB.prepare("INSERT INTO audit_log (at, action, subject) VALUES (?, 'admin_token', ?)").bind(now, arg).run();
+    return json({ login: arg, token: created }, 201);
+  }
   if (what === "verifiers" && req.method === "POST" && !arg) {
     const body = await readJson<{ name?: string; public_key?: string }>(req);
     if (!body.name || !/^[A-Za-z0-9._-]{1,64}$/.test(body.name)) throw new HttpError(400, "bad_name", "verifier name must be 1-64 of [A-Za-z0-9._-]");

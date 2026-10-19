@@ -172,6 +172,7 @@ Every response is JSON. Errors have the shape `{"error": {"code", "message", "hi
 | GET | `/api/v1/tokens` · POST · DELETE `/:id` | token | list, create, revoke your tokens |
 | GET | `/api/v1/me` | token | who am I, token scopes |
 | POST | `/api/v1/admin/users` | admin | create a user and their first token |
+| POST | `/api/v1/admin/users/:login/tokens` | admin | recovery token for an existing user |
 | POST | `/api/v1/admin/verifiers` | admin | register a verifier public key |
 | PUT | `/api/v1/admin/reservations/:name` | admin | grant a reserved name to a user |
 | PUT | `/api/v1/admin/tuf/:file` | admin | upload offline-signed `root.json` / `mirrors.json` |
@@ -318,7 +319,9 @@ admin grants), and `audit_log` (publish, yank, owner and token events).
 - `hx registry login [--registry] [--token-stdin]`, `logout`, `list`,
   `token create|list|revoke`, `add` (writes the `repository` stanza into
   `cabal.project`, fetching root key ids from `/api/v1/config`, and creating
-  `cabal.project` with `packages: .` if absent).
+  `cabal.project` with `packages: ./*.cabal` if absent). The repository is
+  named after the URL's host, so production and a local dev server keep
+  separate cabal caches.
 - `hx publish --registry X`: the same pre-publish checks, then `cabal sdist`,
   then an upload to `PUT /api/v1/packages/upload`.
 - `hx search --registry X` uses the JSON search API.

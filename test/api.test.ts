@@ -58,6 +58,15 @@ describe("auth", () => {
     expect(statuses.at(-1)).toBe(429);
   });
 
+  it("lets the admin mint a recovery token for an existing user", async () => {
+    const u = await newUser();
+    const res = await call("POST", `/api/v1/admin/users/${u.login}/tokens`, { token: ADMIN });
+    expect(res.status).toBe(201);
+    const t = (await jsonOf(res)).token.token;
+    expect((await jsonOf(await call("GET", "/api/v1/me", { token: t }))).login).toBe(u.login);
+    expect((await call("POST", "/api/v1/admin/users/nobody-here/tokens", { token: ADMIN })).status).toBe(404);
+  });
+
   it("validates token requests", async () => {
     const u = await newUser();
     const bad = await call("POST", "/api/v1/tokens", { token: u.token, body: { name: "x", scopes: ["root"] } });
