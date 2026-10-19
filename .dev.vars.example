@@ -1,0 +1,3 @@
+# Copy to .dev.vars for wrangler dev. Never commit real values.
+ADMIN_TOKEN=dev-admin-token
+# TUF_ONLINE_KEY='<contents of keys/online.jwk from scripts/tuf-keygen.mjs>'

@@ -1,0 +1,68 @@
+# BHC verifier for the arcanist.sh registry (documented template; not yet run).
+#
+# Copy to .github/workflows/ in a dedicated verifier repository. It polls the
+# registry for versions without an attestation, builds each with BHC, signs
+# the result with the verifier key and posts it back.
+#
+# Setup (owner):
+#   1. node scripts/attest.mjs --keygen          -> private_jwk + public_key
+#   2. POST /api/v1/admin/verifiers {"name":"ci-bhc","public_key":"<public_key>"}
+#   3. GitHub repo secret BHC_VERIFIER_KEY = the private_jwk JSON
+#   4. (optional) repo variable REGISTRY_URL, default https://registry.arcanist.sh
+name: bhc-verify
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  repository_dispatch:
+    types: [registry-publish]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bhc-verify
+  cancel-in-progress: false
+
+env:
+  REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://registry.arcanist.sh' }}
+  BHC_VERSION: latest
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: arcanist-sh/registry   # for scripts/attest.mjs
+          path: registry
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install hx and BHC
+        run: |
+          curl -fsSL https://arcanist.sh/hx/install.sh | sh
+          echo "$HOME/.hx/bin" >> "$GITHUB_PATH"
+          "$HOME/.hx/bin/hx" toolchain install --bhc "$BHC_VERSION"
+      - name: Verify unverified versions
+        env:
+          BHC_VERIFIER_KEY: ${{ secrets.BHC_VERIFIER_KEY }}
+        run: |
+          set -euo pipefail
+          bhc_version="$(bhc --numeric-version)"
+          log_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          curl -fsS "$REGISTRY_URL/api/v1/unverified?limit=20" | jq -c '.versions[]' | while read -r v; do
+            name="$(jq -r .name <<<"$v")"; version="$(jq -r .version <<<"$v")"; sha="$(jq -r .sha256 <<<"$v")"
+            work="$(mktemp -d)"
+            curl -fsS -o "$work/pkg.tar.gz" "$(jq -r .tarball_url <<<"$v")"
+            echo "$sha  $work/pkg.tar.gz" | sha256sum -c -
+            tar -xzf "$work/pkg.tar.gz" -C "$work"
+            for profile in default; do
+              if (cd "$work/$name-$version" && hx build --backend bhc); then result=pass; else result=fail; fi
+              node registry/scripts/attest.mjs --registry "$REGISTRY_URL" --verifier ci-bhc \
+                --package "$name" --version "$version" --sha256 "$sha" \
+                --bhc-version "$bhc_version" --profile "$profile" --result "$result" --log-url "$log_url"
+            done
+          done

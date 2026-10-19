@@ -1,0 +1,19 @@
+{
+  "name": "arcanist-registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "types": "wrangler types --strict-vars=false",
+    "db:migrate:local": "wrangler d1 migrations apply registry --local"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.4.4",
+    "typescript": "^7.0.2",
+    "vitest": "4.1",
+    "wrangler": "^4.151.1"
+  }
+}

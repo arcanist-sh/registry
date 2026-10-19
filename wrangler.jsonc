@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "arcanist-registry",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Public, non-secret settings. Secrets (ADMIN_TOKEN, TUF_ONLINE_KEY) are set
+  // with `wrangler secret put`, and locally in `.dev.vars` (git-ignored).
+  "vars": {
+    "REGISTRY_NAME": "registry.arcanist.sh",
+    "PUBLIC_URL": "https://registry.arcanist.sh",
+    // "on" asks Hackage whether a new name exists there; "off" disables the check.
+    "HACKAGE_RESERVATION": "on",
+    "HACKAGE_URL": "https://hackage.haskell.org"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "arcanist-registry",
+      // Placeholder: replace with the id printed by `wrangler d1 create arcanist-registry`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "r2_buckets": [
+    { "binding": "BLOBS", "bucket_name": "arcanist-registry" }
+  ],
+
+  // Workers Rate Limiting binding. namespace_id is any account-unique integer string.
+  "ratelimits": [
+    { "name": "PUBLISH_LIMITER", "namespace_id": "4201", "simple": { "limit": 10, "period": 60 } },
+    { "name": "AUTH_LIMITER", "namespace_id": "4202", "simple": { "limit": 30, "period": 60 } },
+    { "name": "ATTEST_LIMITER", "namespace_id": "4203", "simple": { "limit": 60, "period": 60 } }
+  ],
+
+  // Daily: re-sign timestamp/snapshot and seal D1 index chunks into R2 segments.
+  "triggers": { "crons": ["17 3 * * *"] },
+
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+
+  // Custom domain (uncomment after the zone is on Cloudflare):
+  // "routes": [{ "pattern": "registry.arcanist.sh", "custom_domain": true }]
+}
