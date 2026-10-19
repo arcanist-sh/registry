@@ -1,0 +1,41 @@
+name: registry smoke
+
+# Checks the live registry the way users consume it: plain cabal with the
+# repository stanza published at https://arcanist.sh/registry/, pinned to the
+# offline root keys. Fails if the TUF chain stops verifying (expired or
+# missigned metadata, wrong keys) or the registry is unreachable.
+
+on:
+  schedule:
+    - cron: "41 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cabal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: haskell-actions/setup@v2
+        with:
+          ghc-version: "9.10.3"
+          cabal-version: "3.16.1.0"
+      - name: cabal update against registry.arcanist.sh
+        run: |
+          set -euo pipefail
+          mkdir probe && cd probe
+          cat > cabal.project <<'STANZA'
+          packages: .
+          repository registry.arcanist.sh
+            url: https://registry.arcanist.sh
+            secure: True
+            root-keys: b2afecd9177fa52cc20315bf9678be75c95d128a7026c2b4762a28a135424fd0
+                       1a4cacb80c3b1aa55e09a5dff48d9640d6765caa4c517058393613b91e06b9b1
+                       a15fea658da0e33098c4ddbafa80335f00d66370580864c05356729570c0d713
+            key-threshold: 2
+          STANZA
+          sed -i 's/^          //' cabal.project
+          printf 'cabal-version: 3.0\nname: probe\nversion: 0.1\nlibrary\n  build-depends: base\n  default-language: Haskell2010\n' > probe.cabal
+          cabal update registry.arcanist.sh
+          cabal build --dry-run
