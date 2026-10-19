@@ -61,6 +61,8 @@ jobs:
             echo "$sha  $work/pkg.tar.gz" | sha256sum -c -
             tar -xzf "$work/pkg.tar.gz" -C "$work"
             for profile in default; do
+              # Plain cabal packages have no hx.toml; give hx a minimal one.
+              [ -f "$work/$name-$version/hx.toml" ] || printf '[project]\nname = "%s"\n' "$name" > "$work/$name-$version/hx.toml"
               if (cd "$work/$name-$version" && hx build --backend bhc); then result=pass; else result=fail; fi
               node registry/scripts/attest.mjs --registry "$REGISTRY_URL" --verifier ci-bhc \
                 --package "$name" --version "$version" --sha256 "$sha" \
