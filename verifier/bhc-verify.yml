@@ -17,6 +17,13 @@ on:
   repository_dispatch:
     types: [registry-publish]
   workflow_dispatch:
+    inputs:
+      package:
+        description: "Re-verify this package (default: every unverified version)"
+        required: false
+      version:
+        description: "Only this version of the package (default: all versions)"
+        required: false
 
 permissions:
   contents: read
@@ -54,7 +61,16 @@ jobs:
           set -euo pipefail
           bhc_version="$(bhc --numeric-version)"
           log_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          curl -fsS "$REGISTRY_URL/api/v1/unverified?limit=20" | jq -c '.versions[]' | while read -r v; do
+          if [ -n "${{ inputs.package }}" ]; then
+            # Manual re-verification, e.g. after a BHC release: a newer
+            # attestation from this verifier replaces the previous one.
+            curl -fsS "$REGISTRY_URL/api/v1/packages/${{ inputs.package }}" \
+              | jq -c --arg reg "$REGISTRY_URL" --arg only "${{ inputs.version }}" \
+                  '.name as $n | .versions[] | select($only == "" or .version == $only)
+                   | {name: $n, version, sha256, tarball_url: "\($reg)/package/\($n)-\(.version).tar.gz"}'
+          else
+            curl -fsS "$REGISTRY_URL/api/v1/unverified?limit=20" | jq -c '.versions[]'
+          fi | while read -r v; do
             name="$(jq -r .name <<<"$v")"; version="$(jq -r .version <<<"$v")"; sha="$(jq -r .sha256 <<<"$v")"
             work="$(mktemp -d)"
             curl -fsS -o "$work/pkg.tar.gz" "$(jq -r .tarball_url <<<"$v")"
