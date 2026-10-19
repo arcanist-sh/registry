@@ -28,7 +28,7 @@ jobs:
           cat > cabal.project <<'STANZA'
           packages: .
           repository registry.arcanist.sh
-            url: https://registry.arcanist.sh
+            url: https://registry.arcanist.sh/
             secure: True
             root-keys: b2afecd9177fa52cc20315bf9678be75c95d128a7026c2b4762a28a135424fd0
                        1a4cacb80c3b1aa55e09a5dff48d9640d6765caa4c517058393613b91e06b9b1
