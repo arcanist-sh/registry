@@ -20,7 +20,7 @@
       "binding": "DB",
       "database_name": "arcanist-registry",
       // Placeholder: replace with the id printed by `wrangler d1 create arcanist-registry`.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "888c0ae3-a31b-4e09-a401-12e703607ff7",
       "migrations_dir": "migrations"
     }
   ],
@@ -39,8 +39,7 @@
   // Daily: re-sign timestamp/snapshot and seal D1 index chunks into R2 segments.
   "triggers": { "crons": ["17 3 * * *"] },
 
-  "observability": { "enabled": true, "head_sampling_rate": 1 }
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
 
-  // Custom domain (uncomment after the zone is on Cloudflare):
-  // "routes": [{ "pattern": "registry.arcanist.sh", "custom_domain": true }]
+  "routes": [{ "pattern": "registry.arcanist.sh", "custom_domain": true }]
 }
