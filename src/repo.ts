@@ -3,7 +3,7 @@
 // online by the Worker).
 
 import type { Json } from "./canonical";
-import { type IndexKind, type IndexView, finalInfo, readState, streamIndex, viewSize } from "./index-store";
+import { type IndexKind, type IndexView, ensureIndexSeeded, finalInfo, readState, streamIndex, viewSize } from "./index-store";
 import { sha256Hex } from "./sha256";
 import { type SigningKey, fileInfo, importOnlineKey, signDoc, tufTime } from "./tuf";
 import { HttpError, nowSec, withSecurityHeaders } from "./util";
@@ -54,6 +54,8 @@ export async function refreshTuf(env: Env, force = false): Promise<boolean> {
   if (!root || !mirrors) return false;
   const rootBytes = new Uint8Array(await root.arrayBuffer());
   const mirrorsBytes = new Uint8Array(await mirrors.arrayBuffer());
+  // Never sign an empty index: cabal cannot read one.
+  await ensureIndexSeeded(env.DB);
   const now = nowSec();
   const [snap, ts, st] = await Promise.all([metaRow(env, "snapshot.json"), metaRow(env, "timestamp.json"), readState(env.DB)]);
 
@@ -158,6 +160,8 @@ function parseRange(header: string | null, size: number): [number, number] | nul
 }
 
 export async function serveIndex(env: Env, req: Request, kind: IndexKind): Promise<Response> {
+  // Covers registries without TUF (secure: False clients read the index too).
+  await ensureIndexSeeded(env.DB);
   const view = await servedView(env);
   const size = viewSize(kind, view);
   const range = parseRange(req.headers.get("Range"), size);

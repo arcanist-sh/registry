@@ -78,6 +78,17 @@ describe("legacy repository (no TUF metadata uploaded)", () => {
   });
 });
 
+describe("a fresh index", () => {
+  it("starts with a README entry, so cabal can read it before any publish", async () => {
+    const tar = await bytes(await call("GET", "/01-index.tar"));
+    const files = readTar(tar, { maxEntries: 100 });
+    expect(files.length).toBeGreaterThan(0);
+    expect(files[0].path).toBe("README");
+    // More than the bare 1024-byte trailer cabal rejects as "short tar trailer".
+    expect(tar.length).toBeGreaterThan(1024);
+  });
+});
+
 describe("hackage-security repository", () => {
   let rootKeys: Key[];
   let mirrorsKey: Key;

@@ -58,6 +58,25 @@ export function finalInfo(st: IndexState) {
   };
 }
 
+/** Path of the entry a fresh index starts with. */
+export const SEED_ENTRY_PATH = "README";
+
+const SEED_TEXT = `This is the package index of a Haskell package repository.
+Packages appear below as <name>/<version>/<name>.cabal entries.
+`;
+
+/**
+ * Give a fresh index its first entry. cabal cannot read an index tarball that
+ * contains no entries at all ("short tar trailer"), and Hackage's index is
+ * never empty, so neither should ours be. The README is not a package path,
+ * so cabal and hackage-security skip it. A concurrent first call can add a
+ * second README, which is equally harmless.
+ */
+export async function ensureIndexSeeded(db: D1Database): Promise<void> {
+  if ((await readState(db)).tarLength > 0) return;
+  await appendChunk(db, [{ path: SEED_ENTRY_PATH, data: new TextEncoder().encode(SEED_TEXT) }]);
+}
+
 export class AppendConflict extends Error {}
 
 /**
