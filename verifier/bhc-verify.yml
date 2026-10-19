@@ -44,7 +44,7 @@ jobs:
       - name: Install hx and BHC
         run: |
           curl -fsSL https://arcanist.sh/hx/install.sh | HX_INSTALL_DIR="$HOME/.local/bin" sh
-          "$HOME/.local/bin/hx" toolchain install --bhc "$BHC_VERSION"
+          "$HOME/.local/bin/hx" toolchain install --bhc "$BHC_VERSION" --set
           # hx keeps the active BHC at ~/.bhc/bin/bhc
           { echo "$HOME/.local/bin"; echo "$HOME/.bhc/bin"; } >> "$GITHUB_PATH"
       - name: Verify unverified versions
