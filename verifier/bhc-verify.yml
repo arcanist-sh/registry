@@ -1,4 +1,4 @@
-# BHC verifier for the arcanist.sh registry (documented template; not yet run).
+# BHC verifier for the arcanist.sh registry. Deployed as arcanist-sh/bhc-verifier.
 #
 # Copy to .github/workflows/ in a dedicated verifier repository. It polls the
 # registry for versions without an attestation, builds each with BHC, signs
@@ -43,9 +43,10 @@ jobs:
           node-version: 22
       - name: Install hx and BHC
         run: |
-          curl -fsSL https://arcanist.sh/hx/install.sh | sh
-          echo "$HOME/.hx/bin" >> "$GITHUB_PATH"
-          "$HOME/.hx/bin/hx" toolchain install --bhc "$BHC_VERSION"
+          curl -fsSL https://arcanist.sh/hx/install.sh | HX_INSTALL_DIR="$HOME/.local/bin" sh
+          "$HOME/.local/bin/hx" toolchain install --bhc "$BHC_VERSION"
+          # hx keeps the active BHC at ~/.bhc/bin/bhc
+          { echo "$HOME/.local/bin"; echo "$HOME/.bhc/bin"; } >> "$GITHUB_PATH"
       - name: Verify unverified versions
         env:
           BHC_VERIFIER_KEY: ${{ secrets.BHC_VERIFIER_KEY }}
