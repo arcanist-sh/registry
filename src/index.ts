@@ -6,6 +6,8 @@ import { sealIndex } from "./index-store";
 import { handlePublish } from "./publish";
 import { refreshTuf, serveIndex, servePackageTarball, serveTufFile } from "./repo";
 import { HttpError, errorResponse, json } from "./util";
+import { wantsHtml } from "./web/html";
+import { home, notFoundPage, packagePage, searchPage } from "./web/pages";
 
 const TUF_FILES = new Set(["root.json", "mirrors.json", "snapshot.json", "timestamp.json"]);
 
@@ -47,11 +49,31 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
     return api.cabalFile(env, id[0], id[1]);
   }
 
-  // ---- JSON API ----
+  // ---- web pages (read-only) ----
+  // Browsers get HTML at "/"; hx, cabal and scripts keep getting the JSON document.
   if (path === "/" || path === "") {
-    return json({ name: env.REGISTRY_NAME, api: `${env.PUBLIC_URL}/api/v1/config`, docs: "https://arcanist.sh" });
+    if (read && wantsHtml(req)) return home(env);
+    return json({ name: env.REGISTRY_NAME, api: `${env.PUBLIC_URL}/api/v1/config`, docs: "https://arcanist.sh", web: `${env.PUBLIC_URL}/` });
   }
-  if (!path.startsWith("/api/v1/")) throw new HttpError(404, "not_found", `no route for ${path}`);
+  if (path === "/search") {
+    if (!read) methodNotAllowed();
+    return searchPage(env, url);
+  }
+  mm = /^\/package\/([^/]+)\/?$/.exec(path);
+  if (mm) {
+    if (!read) methodNotAllowed();
+    const seg = decodeURIComponent(mm[1]);
+    // Package names have a letter in every dash-separated component, so "<name>-<version>" splits unambiguously.
+    const id = splitPkgId(seg);
+    const res = (id && (await packagePage(env, id[0], id[1]))) || (await packagePage(env, seg, null));
+    return res ?? notFoundPage(env, path);
+  }
+
+  // ---- JSON API ----
+  if (!path.startsWith("/api/v1/")) {
+    if (read && wantsHtml(req)) return notFoundPage(env, path);
+    throw new HttpError(404, "not_found", `no route for ${path}`);
+  }
   const parts = path.slice("/api/v1/".length).split("/").filter(Boolean).map(decodeURIComponent);
   const [head, a, b, c] = parts;
 
