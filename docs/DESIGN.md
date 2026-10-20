@@ -4,10 +4,10 @@ Status: implemented locally (Worker + hx client), not deployed.
 Default public URL (configurable everywhere): `https://registry.arcanist.sh`.
 
 The registry is a Haskell package repository for the arcanist.sh ecosystem
-(hx + BHC). It runs on Cloudflare Workers, with D1 as the source of truth and R2
+(hx + bhc). It runs on Cloudflare Workers, with D1 as the source of truth and R2
 for blobs. Its most important property is that **plain `cabal` can consume it
 as an additional repository**, with no hx involved. hx adds a JSON API on top
-(search, publish, yank, owners, tokens, BHC-verification attestations).
+(search, publish, yank, owners, tokens, bhc-verification attestations).
 
 ## 1. Goals and non-goals
 
@@ -21,14 +21,14 @@ Goals
   `Range` requests.
 - `hx publish --registry arcanist`, `hx search --registry arcanist`,
   `hx registry login|logout|token|add|list`.
-- BHC verification surfaced per version, recorded as signed attestations.
+- bhc verification surfaced per version, recorded as signed attestations.
 
 Non-goals (for now)
 
 - Mirroring Hackage, or a proxy that merges Hackage into this index. Users list
   both repositories in cabal; cabal merges them.
 - Hosting Haddock docs (planned, section 10).
-- Running builds inside the Worker. The Worker cannot run GHC or BHC.
+- Running builds inside the Worker. The Worker cannot run GHC or bhc.
 
 ## 2. Cabal interoperability
 
@@ -168,7 +168,7 @@ Every response is JSON. Errors have the shape `{"error": {"code", "message", "hi
 | PUT/DELETE | `/api/v1/packages/:name/:version/yank` | token (yank) | yank / unyank |
 | GET | `/api/v1/packages/:name/owners` | none | list owners |
 | PUT/DELETE | `/api/v1/packages/:name/owners/:login` | token (owners) | add / remove owner (the last owner cannot be removed) |
-| POST | `/api/v1/packages/:name/:version/attestations` | verifier signature | record a BHC verification |
+| POST | `/api/v1/packages/:name/:version/attestations` | verifier signature | record a bhc verification |
 | GET | `/api/v1/tokens` · POST · DELETE `/:id` | token | list, create, revoke your tokens |
 | GET | `/api/v1/me` | token | who am I, token scopes |
 | POST | `/api/v1/admin/users` | admin | create a user and their first token |
@@ -228,9 +228,9 @@ file anyway.
   table). It is not implemented, because it cannot be end-to-end tested
   without GitHub.
 
-## 5. BHC-verified packages
+## 5. bhc-verified packages
 
-The Worker cannot run BHC. Verification is therefore an **attestation**, a
+The Worker cannot run bhc. Verification is therefore an **attestation**, a
 statement signed by a registered verifier (a CI job):
 
 ```json
@@ -260,7 +260,7 @@ that version).
 
 `verifier/bhc-verify.yml` is a documented GitHub Actions workflow. It is
 triggered by `repository_dispatch` or a schedule, polls
-`/api/v1/unverified`, builds each tarball with BHC per profile, signs with
+`/api/v1/unverified`, builds each tarball with bhc per profile, signs with
 the key from secret `BHC_VERIFIER_KEY` using `scripts/attest.mjs`, and posts
 the result.
 
@@ -284,7 +284,7 @@ the result.
     with `Accept: application/json`) and caches the answer in D1. A 200 rejects
     the publish with a hint. If Hackage is unreachable the publish fails
     closed. An admin can grant a reserved name to a user (for example the
-    Hackage maintainer, who wants a BHC-verified mirror).
+    Hackage maintainer, who wants a bhc-verified mirror).
   - names are unique **case-insensitively** (`Foo` vs `foo`), and `_`/`-`
     are not interchangeable in cabal anyway.
   - a small built-in deny list covers GHC boot and wired-in packages (`base`,

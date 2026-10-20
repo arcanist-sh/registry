@@ -54,7 +54,7 @@ describe("web pages", () => {
     expect(html).toContain('href="https://example.com/"');
     expect(html).toContain(`build-depends: ${name} ^&gt;=1.0`);
     expect(html).toContain("https://hackage.haskell.org/package/containers");
-    expect(html).toContain("Not yet built with BHC");
+    expect(html).toContain("Not yet built with bhc");
     expect(html).toContain(owner);
     expect(html).toContain('href="https://example.com/home"');
 

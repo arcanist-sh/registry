@@ -53,7 +53,7 @@ function pkgList(rows: { name: string; synopsis: string; version: string | null;
     .map(
       (r) => `<li><a href="/package/${esc(r.name)}">
 <span class="pkgs__name">${esc(r.name)}</span>
-<span class="pkgs__meta">${r.verified ? '<span class="badge badge--bhc">BHC</span>' : ""}${r.version ? `<span>${esc(r.version)}</span>` : ""}${
+<span class="pkgs__meta">${r.verified ? '<span class="badge badge--bhc">bhc</span>' : ""}${r.version ? `<span>${esc(r.version)}</span>` : ""}${
         r.published_at ? `<time datetime="${date(r.published_at)}">${date(r.published_at)}</time>` : ""
       }</span>
 ${r.synopsis ? `<span class="pkgs__desc">${esc(r.synopsis)}</span>` : ""}
@@ -87,7 +87,7 @@ export async function home(env: Env): Promise<Response> {
   const body = `
 <section class="hero"><div class="wrap">
 <h1>Haskell packages, signed and checked.</h1>
-<p class="hero__lead">The arcanist.sh registry serves Haskell packages in the same format as Hackage, signed with hackage-security. Plain cabal reads it next to Hackage, hx publishes to it, and BHC builds every new version and records the result.</p>
+<p class="hero__lead">The arcanist.sh registry serves Haskell packages in the same format as Hackage, signed with hackage-security. Plain cabal reads it next to Hackage, hx publishes to it, and bhc builds every new version and records the result.</p>
 <form class="search" action="/search" method="get" role="search">
 <label class="visually-hidden" for="q">Search packages</label>
 <input id="q" name="q" type="search" placeholder="Search packages" autocomplete="off" maxlength="100">
@@ -96,7 +96,7 @@ export async function home(env: Env): Promise<Response> {
 <ul class="stats">
 <li><strong>${c.packages}</strong><span>${c.packages === 1 ? "package" : "packages"}</span></li>
 <li><strong>${c.versions}</strong><span>${c.versions === 1 ? "version" : "versions"}</span></li>
-<li><strong>${c.verified}</strong><span>BHC-verified</span></li>
+<li><strong>${c.verified}</strong><span>bhc-verified</span></li>
 </ul>
 </div></section>
 
@@ -126,7 +126,7 @@ ${codeBlock("cmd-publish", "shell", "hx registry login --registry arcanist\nhx p
 </div></section>`;
   return page(env, {
     title: "arcanist.sh registry",
-    description: "Haskell packages for the arcanist.sh ecosystem, served in the Hackage format and signed with hackage-security. Plain cabal reads it next to Hackage; BHC verifies every new version.",
+    description: "Haskell packages for the arcanist.sh ecosystem, served in the Hackage format and signed with hackage-security. Plain cabal reads it next to Hackage; bhc verifies every new version.",
     path: "/",
     body,
     jsonUrl: "/api/v1/config",
@@ -261,7 +261,7 @@ export async function packagePage(env: Env, name: string, version: string | null
   const passed = atts.some((a) => a.result === "pass");
   const failedOnly = atts.length > 0 && !passed;
   const badges = [
-    passed ? `<span class="badge badge--bhc">BHC-verified</span>` : failedOnly ? `<span class="badge badge--fail">BHC build failed</span>` : `<span class="badge">Not yet built with BHC</span>`,
+    passed ? `<span class="badge badge--bhc">bhc-verified</span>` : failedOnly ? `<span class="badge badge--fail">bhc build failed</span>` : `<span class="badge">Not yet built with bhc</span>`,
     v.yanked ? `<span class="badge badge--yanked">Yanked ${v.yanked_at ? date(v.yanked_at) : ""}</span>` : "",
     v.license ? `<span class="badge badge--plain">${esc(v.license)}</span>` : "",
     !isLatest && latest ? `<a class="badge badge--plain" href="/package/${esc(name)}">Latest is ${esc(latest)}</a>` : "",
@@ -290,7 +290,7 @@ export async function packagePage(env: Env, name: string, version: string | null
     .map(
       (r) =>
         `<li class="${r.yanked ? "is-yanked" : ""}"><a href="/package/${esc(name)}-${esc(r.version)}"${r.version === selected ? ' aria-current="page"' : ""}><span class="v">${esc(r.version)}${
-          verified.has(r.version) ? ' <span class="badge badge--bhc">BHC</span>' : ""
+          verified.has(r.version) ? ' <span class="badge badge--bhc">bhc</span>' : ""
         }</span><time datetime="${date(r.published_at)}">${date(r.published_at)}</time></a></li>`,
     )
     .join("");
@@ -305,7 +305,7 @@ export async function packagePage(env: Env, name: string, version: string | null
     : '<p class="empty">No dependencies.</p>';
 
   const attHtml = atts.length
-    ? `<div class="scroll-x"><table class="att"><thead><tr><th>Result</th><th>BHC</th><th>Profile</th><th>Built</th><th>Verifier</th><th>Log</th></tr></thead><tbody>${atts
+    ? `<div class="scroll-x"><table class="att"><thead><tr><th>Result</th><th>bhc</th><th>Profile</th><th>Built</th><th>Verifier</th><th>Log</th></tr></thead><tbody>${atts
         .map((a) => {
           const log = a.log_url ? safeUrl(a.log_url) : "";
           return `<tr><td>${a.result === "pass" ? '<span class="badge badge--bhc">pass</span>' : '<span class="badge badge--fail">fail</span>'}</td><td><code>${esc(a.bhc_version)}</code></td><td>${esc(
@@ -313,7 +313,7 @@ export async function packagePage(env: Env, name: string, version: string | null
           )}</td><td>${esc(a.built_at.slice(0, 10))}</td><td>${esc(a.verifier)}</td><td>${log ? `<a href="${esc(log)}">Build log</a>` : "<span class=\"muted\">none</span>"}</td></tr>`;
         })
         .join("")}</tbody></table></div><p class="p">Each result is an Ed25519-signed statement from the verifier over the tarball's SHA-256, checked by the registry before it is recorded.</p>`
-    : `<p class="p">No BHC build has been recorded for this version yet. The <a href="https://github.com/arcanist-sh/bhc-verifier">verifier</a> picks up new versions on its next run.</p>`;
+    : `<p class="p">No bhc build has been recorded for this version yet. The <a href="https://github.com/arcanist-sh/bhc-verifier">verifier</a> picks up new versions on its next run.</p>`;
 
   const description = meta.description
     ? meta.description
@@ -343,7 +343,7 @@ ${codeBlock("cmd-add", "shell", `hx registry add   # once per project\nhx add ${
 ${depsHtml}
 </section>
 <section class="stack" aria-labelledby="bhc">
-<span class="label" id="bhc">BHC verification</span>
+<span class="label" id="bhc">bhc verification</span>
 ${attHtml}
 </section>
 </div>

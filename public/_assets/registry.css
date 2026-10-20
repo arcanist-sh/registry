@@ -2,7 +2,7 @@
    The arcanist.sh look (www.arcanist.sh: sass/components/_shell.scss, _home.scss, _navigation.scss), condensed into
    one stylesheet for the Worker-rendered pages: Catppuccin neutrals, Funnel Display headlines, Geist body, mono labels,
    the 64px header, the plasma footer. The registry is part of the quiet parent brand, so it is monochrome; hx teal and
-   BHC mauve appear only where they mean hx or BHC. */
+   bhc mauve appear only where they mean hx or bhc. */
 
 :root {
   --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

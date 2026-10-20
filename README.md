@@ -1,6 +1,6 @@
 # arcanist.sh package registry
 
-A Haskell package registry for the arcanist.sh ecosystem (hx + BHC). It runs
+A Haskell package registry for the arcanist.sh ecosystem (hx + bhc). It runs
 on Cloudflare Workers, with D1 for metadata and R2 for blobs.
 
 - **Plain cabal can use it.** The registry is a hackage-security (TUF)
@@ -9,11 +9,11 @@ on Cloudflare Workers, with D1 for metadata and R2 for blobs.
   legacy `secure: False` mode works too. Tested with cabal-install 3.16.1.0
   and GHC 9.8.2.
 - **The JSON API serves hx.** It covers search, package and version info,
-  publish, yank and unyank, owners, scoped API tokens, and BHC-verification
+  publish, yank and unyank, owners, scoped API tokens, and bhc-verification
   attestations.
 - **People can browse it.** Read-only web pages, rendered by the Worker in the
   arcanist.sh look: a home page with search and recent releases, and a page per
-  package and version with its README, dependencies, versions, files and BHC
+  package and version with its README, dependencies, versions, files and bhc
   verification results. Every page links to its JSON equivalent.
 - Design and rationale: [`docs/DESIGN.md`](docs/DESIGN.md).
 
@@ -70,7 +70,7 @@ hx publish --registry http://localhost:8787
 |---|---|
 | `/` | Home: search, counts, recently published versions, the cabal stanza (HTML for browsers; the JSON document for any client that does not ask for `text/html`) |
 | `/search?q=` | Search by name and synopsis |
-| `/package/:name` | Latest version: README, dependencies, BHC verification, versions, owners, links, files |
+| `/package/:name` | Latest version: README, dependencies, bhc verification, versions, owners, links, files |
 | `/package/:name-:version` | The same for one version |
 | `/_assets/*` | Stylesheet, scripts, favicon (Workers static assets, `public/`) |
 
@@ -94,7 +94,7 @@ the `.cabal` description.
 | `PUT` / `DELETE /api/v1/packages/:name/:version/yank` | yank / unyank |
 | `GET` · `PUT` · `DELETE /api/v1/packages/:name/owners[/:login]` | owners |
 | `GET` · `POST` · `DELETE /api/v1/tokens[/:id]` | your API tokens |
-| `POST /api/v1/packages/:name/:version/attestations` | signed BHC verification |
+| `POST /api/v1/packages/:name/:version/attestations` | signed bhc verification |
 | `/api/v1/admin/...` | users, verifiers, reserved-name grants, TUF upload, seal (`ADMIN_TOKEN`) |
 
 Cabal paths: `/01-index.tar`, `/01-index.tar.gz`, `/00-index.tar.gz`,
@@ -138,7 +138,7 @@ in order, from this directory, after `npm install`.
     The response contains a token that is shown only once.
 12. **Publish the root key ids** (from `cabal-stanza.txt`) on arcanist.sh,
     so users can pin them independently of `/api/v1/config`.
-13. **BHC verifier (GitHub):** generate a key with
+13. **bhc verifier (GitHub):** generate a key with
     `node scripts/attest.mjs --keygen`. Register it with
     `POST /api/v1/admin/verifiers {"name":"ci-bhc","public_key":"..."}`. Create
     a verifier repository with `verifier/bhc-verify.yml`, and add the secret
@@ -195,6 +195,6 @@ public/_assets/ static files for the web pages
 migrations/     D1 schema
 test/           vitest (Workers runtime, local D1/R2)
 scripts/        offline: tuf-keygen.mjs (key ceremony), attest.mjs (verifier signing)
-verifier/       GitHub Actions template for the BHC verifier
+verifier/       GitHub Actions template for the bhc verifier
 docs/DESIGN.md  design decisions
 ```

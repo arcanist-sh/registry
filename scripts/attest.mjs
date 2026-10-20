@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Sign and submit a BHC verification attestation.
+// Sign and submit a bhc verification attestation.
 //
 //   BHC_VERIFIER_KEY='<private Ed25519 JWK>' node scripts/attest.mjs \
 //     --registry https://registry.arcanist.sh --verifier ci-bhc \

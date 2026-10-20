@@ -218,7 +218,7 @@ describe("yank, owners", () => {
   });
 });
 
-describe("BHC attestations", () => {
+describe("bhc attestations", () => {
   it("records only correctly signed attestations for the exact tarball", async () => {
     const u = await newUser();
     const name = uniq("verified");

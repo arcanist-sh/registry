@@ -12,7 +12,7 @@
   var HEAD = [
     'precision highp float;',
     'uniform vec2 res;uniform float t;uniform float light;',
-    // Palette shared by every effect: hx teal, ice, BHC mauve; deeper variants on the light theme.
+    // Palette shared by every effect: hx teal, ice, bhc mauve; deeper variants on the light theme.
     'vec3 pal(float k,float k2){',
     '  vec3 teal=mix(vec3(.58,.89,.84),vec3(.09,.57,.60),light);',
     '  vec3 mauve=mix(vec3(.80,.65,.97),vec3(.53,.22,.94),light);',
