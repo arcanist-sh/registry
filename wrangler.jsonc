@@ -25,6 +25,10 @@
     }
   ],
 
+  // Static files for the web pages (stylesheet, scripts, favicon), served from /_assets/ before the Worker runs.
+  // Only paths that match a file are served this way, so cabal's paths and the API always reach the Worker.
+  "assets": { "directory": "./public" },
+
   "r2_buckets": [
     { "binding": "BLOBS", "bucket_name": "arcanist-registry" }
   ],

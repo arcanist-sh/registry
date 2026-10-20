@@ -15,5 +15,8 @@
     "typescript": "^7.0.2",
     "vitest": "4.1",
     "wrangler": "^4.151.1"
+  },
+  "dependencies": {
+    "marked": "18.0.14"
   }
 }

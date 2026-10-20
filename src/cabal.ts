@@ -68,3 +68,38 @@ export function parseCabal(text: string): CabalInfo {
       .map(([name, ranges]) => ({ name, range: [...ranges].join(" || ") || "any" })),
   };
 }
+
+/** Descriptive fields for the package web page (top-level fields plus the head source repository). */
+export interface CabalMeta {
+  description: string;
+  homepage: string;
+  bugReports: string;
+  author: string;
+  maintainer: string;
+  category: string;
+  copyright: string;
+  testedWith: string;
+  repository: string;
+}
+
+export function cabalMeta(text: string): CabalMeta {
+  const fs = fields(text);
+  const top = (n: string) => fs.find((f) => f.indent === 0 && f.name === n)?.value.trim() ?? "";
+  // cabal descriptions mark blank lines with a lone "."
+  const description = top("description")
+    .split("\n")
+    .map((l) => (l.trim() === "." ? "" : l))
+    .join("\n")
+    .trim();
+  return {
+    description,
+    homepage: top("homepage"),
+    bugReports: top("bug-reports"),
+    author: top("author").replace(/\s+/g, " "),
+    maintainer: top("maintainer").replace(/\s+/g, " "),
+    category: top("category").replace(/\s+/g, " "),
+    copyright: top("copyright").replace(/\s+/g, " "),
+    testedWith: top("tested-with").replace(/\s+/g, " "),
+    repository: fs.find((f) => f.indent > 0 && f.name === "location")?.value.trim() ?? "",
+  };
+}

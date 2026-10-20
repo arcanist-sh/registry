@@ -11,12 +11,16 @@ on Cloudflare Workers, with D1 for metadata and R2 for blobs.
 - **The JSON API serves hx.** It covers search, package and version info,
   publish, yank and unyank, owners, scoped API tokens, and BHC-verification
   attestations.
+- **People can browse it.** Read-only web pages, rendered by the Worker in the
+  arcanist.sh look: a home page with search and recent releases, and a page per
+  package and version with its README, dependencies, versions, files and BHC
+  verification results. Every page links to its JSON equivalent.
 - Design and rationale: [`docs/DESIGN.md`](docs/DESIGN.md).
 
-Status: works locally (`wrangler dev --local`, vitest with the Workers
-runtime). **Not deployed.** Every step that touches a Cloudflare account,
-DNS or GitHub is listed under [Deploy](#deploy-owner-checklist), so each one
-can be approved separately.
+Status: **live at [registry.arcanist.sh](https://registry.arcanist.sh)** (preview;
+publishing accounts by invitation). It also runs locally (`wrangler dev --local`,
+vitest with the Workers runtime). Every step that touches a Cloudflare account,
+DNS or GitHub is listed under [Deploy](#deploy-owner-checklist).
 
 ## Using it from cabal
 
@@ -59,6 +63,24 @@ curl -X POST -H "Authorization: Bearer dev-admin-token" -d '{"login":"me"}' loca
 hx registry login --registry http://localhost:8787 --token-stdin <<< "$TOKEN"
 hx publish --registry http://localhost:8787
 ```
+
+## Web pages
+
+| Path | Page |
+|---|---|
+| `/` | Home: search, counts, recently published versions, the cabal stanza (HTML for browsers; the JSON document for any client that does not ask for `text/html`) |
+| `/search?q=` | Search by name and synopsis |
+| `/package/:name` | Latest version: README, dependencies, BHC verification, versions, owners, links, files |
+| `/package/:name-:version` | The same for one version |
+| `/_assets/*` | Stylesheet, scripts, favicon (Workers static assets, `public/`) |
+
+The cabal paths under `/package/` (`*.tar.gz`, `*/*.cabal`) are unchanged. Pages
+are server-rendered with no inline script or style, under a strict
+Content-Security-Policy. READMEs (`README.md`, `README.markdown`, `README`) are
+read from the version's tarball, rendered with `marked`, filtered through an
+allow-list sanitiser, and cached in R2 at `readme/v<n>/<sha256>.json`; versions
+are immutable, so a rendering never goes stale. Tarballs over 4 MB fall back to
+the `.cabal` description.
 
 ## API summary
 
@@ -168,6 +190,8 @@ Notes:
 
 ```
 src/            Worker (TypeScript): index.ts router, publish, api, repo (cabal files), tuf, index-store, auth, policy
+src/web/        web pages: html (shell, header, footer), pages, readme (render + sanitise + cache)
+public/_assets/ static files for the web pages
 migrations/     D1 schema
 test/           vitest (Workers runtime, local D1/R2)
 scripts/        offline: tuf-keygen.mjs (key ceremony), attest.mjs (verifier signing)
