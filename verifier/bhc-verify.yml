@@ -1,7 +1,7 @@
-# BHC verifier for the arcanist.sh registry. Deployed as arcanist-sh/bhc-verifier.
+# bhc verifier for the arcanist.sh registry. Deployed as arcanist-sh/bhc-verifier.
 #
 # Copy to .github/workflows/ in a dedicated verifier repository. It polls the
-# registry for versions without an attestation, builds each with BHC, signs
+# registry for versions without an attestation, builds each with bhc, signs
 # the result with the verifier key and posts it back.
 #
 # Setup (owner):
@@ -48,11 +48,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install hx and BHC
+      - name: Install hx and bhc
         run: |
           curl -fsSL https://arcanist.sh/hx/install.sh | HX_INSTALL_DIR="$HOME/.local/bin" sh
           "$HOME/.local/bin/hx" toolchain install --bhc "$BHC_VERSION" --set
-          # hx keeps the active BHC at ~/.bhc/bin/bhc
+          # hx keeps the active bhc at ~/.bhc/bin/bhc
           { echo "$HOME/.local/bin"; echo "$HOME/.bhc/bin"; } >> "$GITHUB_PATH"
       - name: Verify unverified versions
         env:
@@ -62,7 +62,7 @@ jobs:
           bhc_version="$(bhc --numeric-version)"
           log_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           if [ -n "${{ inputs.package }}" ]; then
-            # Manual re-verification, e.g. after a BHC release: a newer
+            # Manual re-verification, e.g. after a bhc release: a newer
             # attestation from this verifier replaces the previous one.
             curl -fsS "$REGISTRY_URL/api/v1/packages/${{ inputs.package }}" \
               | jq -c --arg reg "$REGISTRY_URL" --arg only "${{ inputs.version }}" \

@@ -35,10 +35,10 @@ const MENU: { name: string; url?: string; children?: { name: string; url: string
     name: "Products",
     children: [
       { name: "hx", url: `${ARCANIST}/hx/` },
-      { name: "BHC", url: `${ARCANIST}/bhc/` },
+      { name: "bhc", url: `${ARCANIST}/bhc/` },
       { name: "Registry", url: "/" },
       { name: "hx vs Cabal & Stack", url: `${ARCANIST}/hx-vs-cabal-and-stack/` },
-      { name: "BHC vs GHC", url: `${ARCANIST}/bhc-vs-ghc/` },
+      { name: "bhc vs GHC", url: `${ARCANIST}/bhc-vs-ghc/` },
     ],
   },
   {
@@ -61,10 +61,10 @@ const FOOTER: { title: string; links: { text: string; url: string; ext?: boolean
     title: "Products",
     links: [
       { text: "hx", url: `${ARCANIST}/hx/` },
-      { text: "BHC", url: `${ARCANIST}/bhc/` },
+      { text: "bhc", url: `${ARCANIST}/bhc/` },
       { text: "Registry", url: "/" },
       { text: "hx docs", url: "https://docs.arcanist.sh/hx/", ext: true },
-      { text: "BHC docs", url: "https://docs.arcanist.sh/bhc/", ext: true },
+      { text: "bhc docs", url: "https://docs.arcanist.sh/bhc/", ext: true },
     ],
   },
   {
@@ -136,7 +136,7 @@ function footer(crumbs: { text: string; url?: string }[]): string {
 <div class="site-footer__grid">
 <div class="site-footer__brand">
 <a class="site-footer__logo" href="${ARCANIST}/" aria-label="arcanist.sh home">${WORDMARK}</a>
-<p class="site-footer__about">arcanist.sh builds Haskell tooling for the age of AI-authored code. The registry serves Haskell packages for the ecosystem in the format cabal already reads, signed with hackage-security, next to <a href="https://hackage.haskell.org">Hackage</a>. <a href="${ARCANIST}/hx/">hx</a> publishes to it, and <a href="${ARCANIST}/bhc/">BHC</a> builds every new version.</p>
+<p class="site-footer__about">arcanist.sh builds Haskell tooling for the age of AI-authored code. The registry serves Haskell packages for the ecosystem in the format cabal already reads, signed with hackage-security, next to <a href="https://hackage.haskell.org">Hackage</a>. <a href="${ARCANIST}/hx/">hx</a> publishes to it, and <a href="${ARCANIST}/bhc/">bhc</a> builds every new version.</p>
 <p class="site-footer__here"><span>You are here:</span> ${here}</p>
 </div>
 <div class="site-footer__groups">${groups}</div>
