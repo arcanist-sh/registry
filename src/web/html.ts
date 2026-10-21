@@ -98,7 +98,7 @@ const FOOTER: { title: string; links: { text: string; url: string; ext?: boolean
     title: "Elsewhere",
     links: [
       { text: "GitHub", url: "https://github.com/arcanist-sh", ext: true },
-      { text: "X", url: "https://x.com/raskell_io", ext: true },
+      { text: "X", url: "https://x.com/raskelll", ext: true },
       { text: "raskell.io", url: "https://raskell.io", ext: true },
     ],
   },
